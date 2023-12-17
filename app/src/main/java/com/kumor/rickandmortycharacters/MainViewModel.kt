@@ -14,16 +14,21 @@ class MainViewModel : ViewModel() {
 
     private val rickAndMortyRepository = RickAndMortyRepository()
 
-    val liveDataCharacters = MutableLiveData<List<Character>>()
+    val liveDataCharacters = MutableLiveData<UiState<List<Character>>>()
 
     fun getData() {
+        liveDataCharacters.postValue(UiState(isLoading = true))
+
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val request = rickAndMortyRepository.getRickAndMortyResponse()
                 Log.d("MainViewModel", "request response code: ${request.code()}")
-
-                val characters = request.body()?.results ?: emptyList()
-                liveDataCharacters.postValue(characters)
+                if (request.isSuccessful) {
+                    val characters = request.body()?.results ?: emptyList()
+                    liveDataCharacters.postValue(UiState(data = characters))
+                } else {
+                    liveDataCharacters.postValue(UiState(error = "${request.code()}"))
+                }
             } catch (e: Exception) {
                 Log.d("MainViewModel", "request failed, exception", e)
             }

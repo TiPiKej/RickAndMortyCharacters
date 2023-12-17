@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CardElevation
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -32,6 +33,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import com.kumor.rickandmortycharacters.repository.Character
 import com.kumor.rickandmortycharacters.repository.RickAndMortyResponse
 import com.kumor.rickandmortycharacters.ui.theme.RickAndMortyCharactersTheme
 
@@ -52,7 +55,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
 //                    Kafelek()
-                    CharactersDisplay(viewModel = viewModel)
+                    MainView(viewModel = viewModel)
                 }
             }
         }
@@ -60,28 +63,49 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun CharactersDisplay(viewModel: MainViewModel){
-    val characters by viewModel.liveDataCharacters.observeAsState(emptyList())
+fun MainView(viewModel: MainViewModel){
+    val uiState by viewModel.liveDataCharacters.observeAsState(UiState())
 
-    if (characters.isNotEmpty()) {
-        LazyColumn {
-            items(characters) {character ->
-                Log.d("MainActivity", "${character.name}")
-                Kafelek(
-                    name=character.name,
-                    gender=character.gender,
-                    status=character.status,
-                    img=character.image
-                )
-            }
+    when {
+        uiState.isLoading -> {
+            MyLoadingView()
+        }
+        uiState.error !== null -> {
+            MyErrorView(uiState.error)
+        }
+        uiState.data !== null -> {
+            uiState.data?.let { MylistView(it) }
+        }
+    }
+}
+
+@Composable
+fun MyLoadingView() {
+    CircularProgressIndicator()
+}
+
+@Composable
+fun MyErrorView(error: String?) {
+    Text(text = error ?: "")
+}
+
+@Composable
+fun MylistView(characters: List<Character>) {
+    LazyColumn {
+        items(characters) {character ->
+            Log.d("MainActivity", "${character.name}")
+            Kafelek(
+                name=character.name,
+                gender=character.gender,
+                status=character.status,
+                img=character.image
+            )
         }
     }
 }
 
 @Composable
 fun Kafelek(name: String, gender: String, status: String, img: String) {
-    var img = R.drawable.morty;
-
     Card(
         modifier = Modifier.padding(16.dp),
         elevation = CardDefaults.cardElevation(
@@ -90,11 +114,16 @@ fun Kafelek(name: String, gender: String, status: String, img: String) {
         )
     ) {
         Row {
-            Image(
-                painter = painterResource(id = img),
-                contentDescription = name,
-                modifier = Modifier.height(100.dp)
+            AsyncImage(
+                model = img,
+                contentDescription = "Postać",
+                placeholder = painterResource(id = R.drawable.morty)
             )
+//            (
+//                painter = painterResource(id = img),
+//                contentDescription = name,
+//                modifier = Modifier.height(100.dp)
+//            )
             Column {
                 Text(
                     modifier = Modifier.padding(16.dp, 8.dp),

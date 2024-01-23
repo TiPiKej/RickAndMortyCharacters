@@ -44,7 +44,7 @@ class DetailsActivity : ComponentActivity() {
 
         val id = intent.getIntExtra("CUSTOM_KEY", 0)
 
-        Toast.makeText(this, "details id: $id", Toast.LENGTH_SHORT).show()
+//        Toast.makeText(this, "details id: $id", Toast.LENGTH_SHORT).show()
 
         viewModel.getCharacterData(id)
 

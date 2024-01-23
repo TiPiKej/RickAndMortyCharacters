@@ -15,6 +15,7 @@ class MainViewModel : ViewModel() {
     private val rickAndMortyRepository = RickAndMortyRepository()
 
     val liveDataCharacters = MutableLiveData<UiState<List<Character>>>()
+    val liveDataCharacter = MutableLiveData<UiState<Character>>()
 
     fun getData() {
         liveDataCharacters.postValue(UiState(isLoading = true))
@@ -28,6 +29,25 @@ class MainViewModel : ViewModel() {
                     liveDataCharacters.postValue(UiState(data = characters))
                 } else {
                     liveDataCharacters.postValue(UiState(error = "${request.code()}"))
+                }
+            } catch (e: Exception) {
+                Log.d("MainViewModel", "request failed, exception", e)
+            }
+        }
+    }
+
+    fun getCharacterData(id: Int) {
+        liveDataCharacter.postValue(UiState(isLoading = true))
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val request = rickAndMortyRepository.getRickAndMortyCharacter(id)
+                Log.d("MainViewModel", "request response code: ${request.code()}")
+                if (request.isSuccessful) {
+                    val character = request.body()
+                    liveDataCharacter.postValue(UiState(data = character))
+                } else {
+                    liveDataCharacter.postValue(UiState(error = "${request.code()}"))
                 }
             } catch (e: Exception) {
                 Log.d("MainViewModel", "request failed, exception", e)

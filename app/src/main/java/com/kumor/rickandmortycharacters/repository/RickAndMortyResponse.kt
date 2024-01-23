@@ -11,5 +11,11 @@ data class Character (
     val name: String,
     val status: String,
     val gender: String,
-    val image: String
+    val image: String,
+    val location: Location
+)
+
+data class Location (
+    val name: String,
+    val url: String
 )

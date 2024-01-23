@@ -13,3 +13,9 @@ data class UiStateSimple(
     val isLoading: Boolean = false,
     val error: String? = null
 )
+
+data class UiStateSingleCharacter(
+    val data: Character? = null,
+    val isLoading: Boolean = false,
+    val error: String? = null
+)
